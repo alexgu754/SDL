@@ -3614,17 +3614,16 @@ static bool METAL_WaitForFences(
                 }
             }
         } else {
-            bool waiting = true;
+            bool should_wait = false;
             for (Uint32 i = 0; i < numFences; i += 1) {
                 MetalFence *fence = (MetalFence *)fences[i];
-                if (fence->commandBuffer &&
-                    fence->commandBuffer->handle.status == MTLCommandBufferStatusCompleted) {
-
-                    waiting = 0;
+                if (METAL_INTERNAL_IsFenceBusy(fence)) {
+                    should_wait = true;
+                    break;
                 }
             }
 
-            if (waiting) {
+            if (should_wait) {
                 dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
                 for (Uint32 i = 0; i < numFences; i += 1) {
                     MetalFence *fence = (MetalFence *)fences[i];
@@ -4131,7 +4130,7 @@ static bool METAL_Submit(
         // Check if we can perform any cleanups
         for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
 
-            if (METAL_INTERNAL_IsFenceBusy(renderer->submittedCommandBuffers[i]->fence)) {
+            if (!METAL_INTERNAL_IsFenceBusy(renderer->submittedCommandBuffers[i]->fence)) {
                 METAL_INTERNAL_CleanCommandBuffer(
                     renderer,
                     renderer->submittedCommandBuffers[i],
