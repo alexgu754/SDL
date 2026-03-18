@@ -3609,12 +3609,12 @@ static bool METAL_WaitForFences(
         if (waitAll) {
             for (Uint32 i = 0; i < numFences; i += 1) {
                 MetalFence *fence = (MetalFence *)fences[i];
-                if(METAL_INTERNAL_IsFenceBusy(fence)) {
+                if (METAL_INTERNAL_IsFenceBusy(fence)) {
                     [fence->commandBuffer->handle waitUntilCompleted];
                 }
             }
         } else {
-            bool waiting = 1;
+            bool waiting = true;
             for (Uint32 i = 0; i < numFences; i += 1) {
                 MetalFence *fence = (MetalFence *)fences[i];
                 if (fence->commandBuffer &&
